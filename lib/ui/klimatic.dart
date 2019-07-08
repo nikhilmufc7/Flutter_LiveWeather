@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'dart:async';
+import '../util/utils.dart' as util;
+import 'package:http/http.dart' as http;
 
 class Klimatic extends StatefulWidget {
   @override
@@ -6,6 +10,11 @@ class Klimatic extends StatefulWidget {
 }
 
 class _KlimaticState extends State<Klimatic> {
+  void showStuff() async {
+    Map data = await getWeather(util.appID, util.defaultCity);
+    print(data.toString());
+  }
+
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
@@ -16,37 +25,87 @@ class _KlimaticState extends State<Klimatic> {
         actions: <Widget>[
           new IconButton(
             icon: new Icon(Icons.menu),
-            onPressed:()=> debugPrint( "hey"),
+            onPressed: showStuff,
           )
         ],
-
-
       ),
       body: new Stack(
         children: <Widget>[
           new Center(
-            child: new Image.asset('images/rain.jpg',
-            width: 470.0,
-            height: 1200.0,
-            fit: BoxFit.fill,),
+            child: new Image.asset(
+              'images/rain.jpg',
+              width: 470.0,
+              height: 1200.0,
+              fit: BoxFit.fill,
+            ),
           ),
           new Container(
             alignment: Alignment.topRight,
             margin: const EdgeInsets.fromLTRB(0.0, 10.9, 20.9, 0.0),
             child: new Text(
-              "Spokane",
-              style:  cityStyle(),
+              "Pune",
+              style: cityStyle(),
             ),
+          ),
+          new Container(
+            margin: const EdgeInsets.fromLTRB(60.0, 350.0, 0.0, 0.0),
+            child: updateTempWidget("Pune"),
           )
         ],
       ),
     );
   }
+
+  Future<Map> getWeather(String appID, String city) async {
+    var apiUrl =
+        "https://api.openweathermap.org/data/2.5/weather?q=$city&appid=${util.appID}&units=metric";
+    http.Response response = await http.get(apiUrl);
+    return json.decode(response.body);
+  }
+
+  Widget updateTempWidget(String city){
+    return new FutureBuilder(
+      future: getWeather(util.appID, city),
+      builder: (BuildContext context, AsyncSnapshot <Map> snapshot ){
+          if(snapshot.hasData){
+            Map content = snapshot.data;
+            return new Container(
+              child: new Column(
+                children: <Widget>[
+                  new ListTile(
+                    title: new Text(content['main']['temp'].toString(),
+                    style: new TextStyle(
+                      color: Colors.white,
+                      fontStyle: FontStyle.normal,
+                      fontSize: 49.9,
+                    ),),
+
+                  )
+                ],
+              ),
+            );
+          }else{
+            return new Container();
+          }
+      }
+    );
+  }
 }
- TextStyle cityStyle(){
+
+
+
+TextStyle cityStyle() {
   return new TextStyle(
     fontSize: 22.9,
     color: Colors.white,
     fontStyle: FontStyle.italic,
   );
- }
+}
+
+TextStyle tempStyle() {
+  return new TextStyle(
+    color: Colors.white,
+    fontStyle: FontStyle.normal,
+    fontSize: 49.9,
+  );
+}
