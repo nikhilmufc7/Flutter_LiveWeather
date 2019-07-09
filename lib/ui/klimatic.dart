@@ -10,6 +10,18 @@ class Klimatic extends StatefulWidget {
 }
 
 class _KlimaticState extends State<Klimatic> {
+
+  String _cityEntered;
+  Future _goToNextScreen(BuildContext context) async {
+    Map results = await Navigator.of(context)
+        .push(new MaterialPageRoute<Map>(builder: (BuildContext context) {
+      return new ChangeCity();
+    }));
+    if(results!= null && results.containsKey('enter')){
+      _cityEntered = results['enter'];
+    };
+  }
+
   void showStuff() async {
     Map data = await getWeather(util.appID, util.defaultCity);
     print(data.toString());
@@ -25,7 +37,9 @@ class _KlimaticState extends State<Klimatic> {
         actions: <Widget>[
           new IconButton(
             icon: new Icon(Icons.menu),
-            onPressed: showStuff,
+            onPressed: () {
+              _goToNextScreen(context);
+            },
           )
         ],
       ),
@@ -43,13 +57,13 @@ class _KlimaticState extends State<Klimatic> {
             alignment: Alignment.topRight,
             margin: const EdgeInsets.fromLTRB(0.0, 10.9, 20.9, 0.0),
             child: new Text(
-              "Pune",
+              "${_cityEntered== null ? util.defaultCity : _cityEntered}",
               style: cityStyle(),
             ),
           ),
           new Container(
             margin: const EdgeInsets.fromLTRB(60.0, 350.0, 0.0, 0.0),
-            child: updateTempWidget("Pune"),
+            child: updateTempWidget(_cityEntered),
           )
         ],
       ),
@@ -63,36 +77,97 @@ class _KlimaticState extends State<Klimatic> {
     return json.decode(response.body);
   }
 
-  Widget updateTempWidget(String city){
+  Widget updateTempWidget(String city) {
     return new FutureBuilder(
-      future: getWeather(util.appID, city),
-      builder: (BuildContext context, AsyncSnapshot <Map> snapshot ){
-          if(snapshot.hasData){
+        future: getWeather(util.appID, city == null ? util.defaultCity : city),
+        builder: (BuildContext context, AsyncSnapshot<Map> snapshot) {
+          if (snapshot.hasData) {
             Map content = snapshot.data;
             return new Container(
               child: new Column(
                 children: <Widget>[
                   new ListTile(
-                    title: new Text(content['main']['temp'].toString(),
-                    style: new TextStyle(
-                      color: Colors.white,
-                      fontStyle: FontStyle.normal,
-                      fontSize: 49.9,
-                    ),),
-
+                    title: new Text(
+                      content['main']['temp'].toString(),
+                      style: new TextStyle(
+                        color: Colors.white,
+                        fontStyle: FontStyle.normal,
+                        fontSize: 49.9,
+                      ),
+                    ),
                   )
                 ],
               ),
             );
-          }else{
+          } else {
             return new Container();
           }
-      }
-    );
+        });
   }
 }
 
+class ChangeCity extends StatelessWidget {
+  var _cityFieldController = TextEditingController();
+  @override
+  Widget build(BuildContext context) {
+    return new Scaffold(
+      appBar: new AppBar(
+        title: new Text("Enter a city"),
+        backgroundColor: Colors.redAccent,
+        centerTitle: true,
+      ),
+      body: new Stack(
+        children: <Widget>[
+          new Center(
+              child: new Image.asset(
+            'images/snow.jpg',
+            width: 490.0,
+            height: 1200.0,
+            fit: BoxFit.fill,
+          )),
+          new ListView(
+            children: <Widget>[
+              new ListTile(
+                title: new TextField(
+                  style: new TextStyle(
+                    color: Colors.black,
 
+                  ),
+                  decoration: new InputDecoration(
+                    fillColor: Colors.white,
+                    filled: true,
+
+                    hintText: "Enter City",
+                    hintStyle: TextStyle(
+                      color: Colors.grey,
+                    )
+
+                  ),
+                  controller: _cityFieldController,
+                  keyboardType: TextInputType.text,
+                ),
+              ),
+              new ListTile(
+                title : new FlatButton(
+                  onPressed: () {
+                    Navigator.pop(context,{
+                      'enter' : _cityFieldController.text
+                    });
+                  },
+    
+                  textColor: Colors.white,
+                  color: Colors.redAccent,
+                  child: new Text("Get Weather"),
+                )
+              )
+            ],
+          )
+        ],
+
+      ),
+    );
+  }
+}
 
 TextStyle cityStyle() {
   return new TextStyle(
