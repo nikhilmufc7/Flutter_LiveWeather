@@ -29,9 +29,11 @@ class _KlimaticState extends State<Klimatic> {
 
   @override
   Widget build(BuildContext context) {
+
     return new Scaffold(
+
       appBar: new AppBar(
-        title: new Text("Weather live"),
+        title: new Text("Tempy"),
         backgroundColor: Colors.redAccent,
         centerTitle: true,
         actions: <Widget>[
@@ -61,10 +63,8 @@ class _KlimaticState extends State<Klimatic> {
               style: cityStyle(),
             ),
           ),
-          new Container(
-            margin: const EdgeInsets.fromLTRB(60.0, 350.0, 0.0, 0.0),
-            child: updateTempWidget(_cityEntered),
-          )
+          updateTempWidget(_cityEntered),
+
         ],
       ),
     );
@@ -82,20 +82,38 @@ class _KlimaticState extends State<Klimatic> {
         future: getWeather(util.appID, city == null ? util.defaultCity : city),
         builder: (BuildContext context, AsyncSnapshot<Map> snapshot) {
           if (snapshot.hasData) {
+
             Map content = snapshot.data;
             return new Container(
+              margin: const EdgeInsets.fromLTRB(30.0, 310.0, 0.0, 0.0),
               child: new Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   new ListTile(
                     title: new Text(
-                      content['main']['temp'].toString(),
+                      content['main']['temp'].toString() + " C",
                       style: new TextStyle(
                         color: Colors.white,
-                        fontStyle: FontStyle.normal,
+                        fontStyle: FontStyle.italic,
                         fontSize: 49.9,
+                        fontWeight: FontWeight.w500
                       ),
                     ),
-                  )
+                    subtitle: new ListTile(
+                      title: new Text(
+                        "Humidity: ${content['main']['humidity'].toString()}\n"
+                        "Min: ${content['main']['temp_min'].toString()}\n"
+                        "Max: ${content['main']['temp_max'].toString()}",
+                        style: new TextStyle(
+                          fontSize: 17.0,
+                          fontStyle: FontStyle.italic,
+                          color: Colors.white70
+
+                        ),
+                      ),
+                    ),
+                  ),
+
                 ],
               ),
             );

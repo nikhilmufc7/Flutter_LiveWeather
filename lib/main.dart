@@ -3,7 +3,8 @@ import './ui/klimatic.dart';
 
 void main(){
   runApp(new MaterialApp(
-    title: "Weather live",
-    home: new Klimatic()
+    title: "Tempy",
+    home: new Klimatic(),
+    debugShowCheckedModeBanner: false,
   ));
 }
